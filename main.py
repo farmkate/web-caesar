@@ -16,17 +16,39 @@
 #
 import webapp2
 import caesar
+import cgi  #common gateway interface
 
+
+def build_page(textarea_content):
+    title = "Web Caesar"
+    header = '<h2>' + title + '</h2>'
+
+    rot_label = "<label>Rotate by:</label>"
+    rotation_input = "<input type='number' name='rotation' />"
+    
+    message_label = "<label>Type a message:</label>"
+    textarea = "<textarea name='message'>" + textarea_content + "</textarea>"
+    submit = "<input type = 'submit' />"
+    form = ("<form action='' method='post'  >" + 
+        rot_label + rotation_input + "<br>" + 
+        message_label + textarea + "<br>" + 
+        submit + "</form>")
+
+    return header + form
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
-        message = 'Heloooo World'
-        encrypted_message = caesar.encrypt(message, 13) 
+        content = build_page("")        
+        self.response.write(content)
 
-        textarea = "<textarea>" + encrypted_message + "</textarea>"
-        submit = "<input type = 'submit' />"
-        form = "<form>" + textarea + "<br>" + submit + "</textarea>"
-        self.response.write(form)
+    def post(self):
+        message = self.request.get('message')   #get the value associated with the key inside the parentheses
+        rotation = int(self.request.get('rotation'))
+        encrypted_message = caesar.encrypt(message, rotation) 
+        escaped_message = cgi.escape(encrypted_message)
+        content = build_page(escaped_message)
+        self.response.write(content)
+
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
